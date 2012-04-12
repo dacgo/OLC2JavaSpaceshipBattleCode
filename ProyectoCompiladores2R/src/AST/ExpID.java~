@@ -1,0 +1,236 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package AST;
+
+import java.util.LinkedList;
+
+/**
+ *
+ * @author Eddy
+ */
+public class ExpID extends Exp{
+    public String Variable;
+    public LinkedList<Exp> Indices;
+
+    public String NombreMetodo;
+    public LinkedList<Exp> Parametros;
+
+    public ExpID subExpID;
+
+
+    public void EjecutarParametros()
+    {
+        int i;
+        if(Parametros!=null)
+        {
+            for(i=0;i<Parametros.size();i++)
+            {
+                if(Parametros.get(i)!=null)
+                {
+                    Parametros.get(i).Ejecutar();
+                    
+                }
+            }
+        }
+    }
+
+    public void EjecutarIndices()
+    {
+      int i;
+      if(Indices!=null)
+      {
+	for(i=0;i<Indices.size();i++)
+	{	
+	    if(Indices.get(i)!=null)
+	    {
+		Indices.get(i).Ejecutar();
+	    }
+	}
+      }
+    }
+
+    public String NombreRealMetodo()
+    {
+        String res="";
+        int i;
+        for(i=0;i<Parametros.size();i++)
+        {
+            res=res+"_"+Parametros.get(i).tipos.Tipos.get(0);
+        }
+        res=NombreMetodo+"_"+res;
+        return res;
+    }
+    
+    public void EjecutarFuncion()
+    {
+        int i;
+        Simbolo s=null;
+        Simbolo s1=null;
+        int DireccionArgumento=0;
+        s1=tabla.BuscarM(Metodo);
+        if(Variable==null&&NombreMetodo!=null&&subExpID==null)
+        {
+            s=tabla.BuscarM(NombreRealMetodo());
+            if(s==null)
+            {
+                s=tabla.BuscarM(Clase+"_"+NombreRealMetodo());
+            }
+        }
+        if(Variable==null&&NombreMetodo!=null&&subExpID!=null)
+        {
+            if(subExpID.tipos.Tipos.size()==1)
+            {
+                String ClaseTipo=subExpID.tipos.Tipos.get(0);
+                s=tabla.BuscarM(ClaseTipo+"_"+NombreRealMetodo());
+            }
+        }
+        
+            if(s==null){}
+            else
+            {
+                EjecutarParametros();
+                if(s.Argumentos.size()==Parametros.size())
+                {
+                    /*Coloca los parametros en Size(Metodo)+PosRel(De cada argumento)*/
+                    for(i=0;i<s.Argumentos.size();i++)
+                    {
+                        if(Parametros.get(i).tipos.Buscar(s.Argumentos.get(i).Tipo))
+                        {
+                            
+                            DireccionArgumento=s1.Size+s.Argumentos.get(i).PosRel;
+                            Memoria.SetPilaR(DireccionArgumento, Parametros.get(i).Valor);
+                            
+                        
+                        }
+                        
+                    }
+                    if(!s.Padre.endsWith(""))
+                    {
+                            DireccionArgumento=s.Size+s1.Size-2;
+                    }   
+                    
+                }
+                // revisar los simbolos de los parametros con su tipo y colocarlos Size(medotoActual)+Simbolo.PosRel;
+                // la direccion al objeto en cuestion seria Size(metodoActual)+Size(MetodoALLamar)-2
+                Memoria.MovePtrP(s1.Size);
+                s.SubArbol.Ejecutar();
+                Memoria.MovePtrP(0-s1.Size);
+            }
+
+        
+
+    }
+    public void EjecutarID()
+    {
+        Simbolo s=null;
+        if(Variable!=null&&NombreMetodo==null&&subExpID==null)
+        {
+            s=tabla.BuscarV(Variable);
+            Simbolo temp=null;
+            if(s==null)
+            {
+                s=tabla.BuscarA(Clase+"_"+Variable, Clase);
+            }
+            if(s==null)
+            {
+                s=tabla.BuscarVG(Variable);
+            }
+            if(s==null){}
+            else
+            {
+                if(s.Variable){
+                                    Direccion=s.PosRel;
+                                    tipos.Add(s.Tipo);
+                                    Valor=Memoria.GetPilaR(Direccion);
+
+                                }
+                if(s.Atributo){
+
+                                    Simbolo sT=tabla.BuscarM(Metodo);
+                                    int DireccionObjetoAcutal=Integer.parseInt(Memoria.GetPilaR(sT.Size-2));
+                                    Direccion=DireccionObjetoAcutal+s.PosRel;
+                                    tipos.Add(s.Tipo);
+                                    Valor=Memoria.GetHeap(Direccion);
+                                }
+                if(s.Global){
+                                    Direccion=s.PosGlo;
+                                    tipos.Add(s.Tipo);
+                                    Valor=Memoria.GetPilaR(Direccion);
+                                }
+            }
+        }
+        if(Variable!=null&&NombreMetodo==null&&subExpID!=null)
+        {
+            String ClaseTemp="";
+            if(subExpID.tipos.Tipos.size()==1)
+            {
+                ClaseTemp=subExpID.tipos.Tipos.getFirst();
+            s=tabla.BuscarA(ClaseTemp+"_"+Variable, ClaseTemp);
+
+            if(s!=null)
+            {
+
+                if(s.Primitivo()){
+                    
+                    Direccion=Integer.parseInt(subExpID.Valor)+s.PosRel;
+                    tipos.Add(s.Tipo);
+                    Valor=Memoria.GetHeap(Direccion);
+                }
+                else{
+                    Direccion=Integer.parseInt(subExpID.Valor)+s.PosRel;
+                    tipos.Add(s.Tipo);
+                    Valor=Memoria.GetHeap(Direccion);
+                }
+            }
+            }
+        }
+
+    }
+
+
+    public boolean Ejecutar()
+    {
+        boolean res=true;
+
+       
+    
+        return res;
+    }
+
+    public boolean CargarTS()
+    {
+        boolean res=true;
+        int i;
+        if(Indices!=null)
+        {
+            for(i=0;i<Indices.size();i++)
+            {
+                if(Indices.get(i)!=null)
+                {
+                Indices.get(i).Metodo=Metodo;
+                res=Indices.get(i).CargarTS();
+                }
+            }
+        }
+        if(Parametros!=null&&res)
+        {
+            for(i=0;i<Parametros.size();i++)
+            {
+                if(Parametros.get(i)!=null)
+                {
+                Parametros.get(i).Metodo=Metodo;
+                res=Parametros.get(i).CargarTS();
+                }
+            }
+        }
+        if(subExpID!=null&&res)
+        {
+            subExpID.Metodo=Metodo;
+            subExpID.CargarTS();
+        }
+        return res;
+    }
+}

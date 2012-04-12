@@ -1,0 +1,330 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package Interprete3Direcciones;
+
+import proyectocompiladores2r.Mundo;
+
+/**
+ *
+ * @author eddytrex
+ */
+public class Cuadruplo {
+    public String Operador;
+    public String OP1;
+    public String OP2;
+    public String Result;
+    
+    public int Op1Int;
+    public int Op2Int;
+    public int ResInt;
+    
+    public double Op1double;
+    public double Op2double;
+    public double Resdouble;
+    
+    public boolean Activo=true;
+    
+    boolean Op1int=false;
+    boolean Op2int=false;
+    boolean Resint=false;
+    
+    boolean Op1dou=false;
+    boolean Op2dou=false;
+    boolean Resdou=false;
+    
+    
+    public void Convertir(String op)
+    {
+        if(op.equals("OP1"))
+        {
+        try{
+         Op1Int=Integer.parseInt(OP1);
+         Op1int=true;
+        }
+        catch(NumberFormatException ex)
+        {
+        try{
+        Op1double=Double.parseDouble(OP1);
+        Op1dou=true;
+        }
+        catch(NumberFormatException ex1)
+        {}
+        }        
+        
+        }
+        
+        if(op.equals("OP2"))
+        {
+        try{
+         Op2Int=Integer.parseInt(OP2);
+         Op2int=true;
+        }
+        catch(NumberFormatException ex)
+        {
+           try{
+           Op2double=Double.parseDouble(OP2);
+           Op2dou=true;
+           }
+           catch(NumberFormatException ex1)
+           {}
+        }       
+        
+        }
+        if(op.equals("RES"))
+        {
+        try{
+        ResInt=Integer.parseInt(Result);
+        Resint=true;
+        }
+        catch(NumberFormatException ex)
+        {
+        
+        try{
+        Resdouble=Double.parseDouble(Result);
+        Resdou=true;
+        }
+        catch(NumberFormatException ex1)
+        {}
+        }
+        }
+        
+    }
+    
+    public Cuadruplo(String op1,String op2,String operador,String res)
+    {
+        OP1=op1;
+        OP2=op2;
+        Result=res;
+        
+        
+        
+        Operador=operador;
+        
+    }
+    
+    public boolean EjecutarCuadruplo(GrafoCuadruplos G,Mundo m)
+    {
+        boolean res=false;
+        boolean banderaOP1=false;
+        boolean banderaOP2=false;
+        boolean banderaSalto=false;
+        int val1=0;
+        int val2=0;
+        int val3=0;
+        double val1f=0;
+        double val2f=0;
+        double val3f=0;
+        
+        if(Operador.equals("GOTO"))
+        {
+            NodoCuadruplos temp=G.BuscarEtiqueta(Result); 
+            if(temp!=null)
+            {
+            temp.Ejecutar(G,m);
+            res=true;           
+            }
+        }
+        
+        if(Operador.equals("CALL"))
+        {
+           
+            NodoCuadruplos temp=G.BuscarEtiqueta(Result); 
+            if(temp!=null)
+            {temp.Ejecutar(G,m);}
+            else
+            {
+             if(Result.equals("Disparar")){}
+             if(Result.equals("Mover")){}
+             if(Result.equals("MoverAtraz")){}
+             if(Result.equals("Girar")){}
+            }
+            //res=true;           
+        }
+        
+        if(Operador.equals("STACK"))
+        {
+            if(!GrafoCuadruplos.Tenteros.containsKey(Result)){this.Convertir("Res");val3=Op1Int;}
+            else{val3=GrafoCuadruplos.Tenteros.get(Result);}
+            
+            
+            
+            if(GrafoCuadruplos.Tenteros.containsKey(OP1)){val1=GrafoCuadruplos.Tenteros.get(OP1);banderaOP1=false;}
+            else
+            {
+                if(GrafoCuadruplos.Tflotantes.containsKey(OP1)){val1f=GrafoCuadruplos.Tflotantes.get(OP1);banderaOP1=true;}
+                else
+                {
+                    this.Convertir("OP1");
+                    if(this.Op1int){val1=Op1Int;banderaOP1=false;}
+                    if(this.Op1dou){val1f=Op1double;banderaOP1=true;}
+                }                
+            }          
+           
+            if(!banderaOP1){GrafoCuadruplos.Stack[val3]=val1;}
+            else{GrafoCuadruplos.Stack[val3]=(int)val1f;}
+               
+        }
+        if(Operador.equals("STACKV"))
+        {
+            if(!GrafoCuadruplos.Tenteros.containsKey(OP1)){this.Convertir("OP1");val1=Op1Int;banderaOP1=false;}
+            else{val1=GrafoCuadruplos.Tenteros.get(OP1);banderaOP1=false;}
+            
+            if(GrafoCuadruplos.Tenteros.containsKey(Result)){banderaOP1=false;}
+            if(GrafoCuadruplos.Tflotantes.containsKey(Result)){banderaOP1=true;}
+            
+            if(!banderaOP1)
+            {
+                GrafoCuadruplos.Tenteros.put(Result,GrafoCuadruplos.Stack[val1]);
+            }
+            else{
+                GrafoCuadruplos.Tflotantes.put(Result,(double)GrafoCuadruplos.Stack[val1]);
+            }            
+        }      
+        
+        if(Operador.equals("HEAP"))
+        {
+            if(!GrafoCuadruplos.Tenteros.containsKey(Result)){this.Convertir("Res");val3=Op1Int;}
+            else{val3=GrafoCuadruplos.Tenteros.get(Result);}
+            
+            if(GrafoCuadruplos.Tenteros.containsKey(OP1)){val1=GrafoCuadruplos.Tenteros.get(OP1);banderaOP1=false;}
+            else
+            {
+                if(GrafoCuadruplos.Tflotantes.containsKey(OP1)){val1f=GrafoCuadruplos.Tflotantes.get(OP1);banderaOP1=true;}
+                else
+                {
+                    this.Convertir("OP1");
+                    if(this.Op1int){val1=Op1Int;banderaOP1=false;}
+                    if(this.Op1dou){val1f=Op1double;banderaOP1=true;}
+                }                
+            }          
+               
+            if(!banderaOP1){GrafoCuadruplos.Heap[val3]=val1;}
+            else{GrafoCuadruplos.Heap[val3]=(int)val1f;}               
+        }
+        if(Operador.equals("HEAPV"))
+        {
+            if(!GrafoCuadruplos.Tenteros.containsKey(OP1)){this.Convertir("OP1");val1=Op1Int;banderaOP1=false;}
+            else{val1=GrafoCuadruplos.Tenteros.get(OP1);banderaOP1=false;}
+            
+            if(GrafoCuadruplos.Tenteros.containsKey(Result)){banderaOP1=false;}
+            if(GrafoCuadruplos.Tflotantes.containsKey(Result)){banderaOP1=true;}
+            
+            if(!banderaOP1)
+            {
+                GrafoCuadruplos.Tenteros.put(Result,GrafoCuadruplos.Heap[val1]);
+            }
+            else{
+                GrafoCuadruplos.Tflotantes.put(Result,(double)GrafoCuadruplos.Heap[val1]);
+            }            
+        }
+        if(Operador.equals("="))
+        {            
+            if(GrafoCuadruplos.Tenteros.containsKey(OP1)){val1=GrafoCuadruplos.Tenteros.get(OP1);banderaOP1=false;}
+            else
+            {
+                if(GrafoCuadruplos.Tflotantes.containsKey(OP1)){val1f=GrafoCuadruplos.Tflotantes.get(OP1);banderaOP1=true;}
+                else
+                {
+                    this.Convertir("OP1");
+                    if(this.Op1int){val1=Op1Int;banderaOP1=false;}
+                    if(this.Op1dou){val1f=Op1double;banderaOP1=true;}
+                }                
+            }
+            if(!banderaOP1){GrafoCuadruplos.Tenteros.put(Result,val1);}
+            else           {GrafoCuadruplos.Tflotantes.put(Result,val1f);}                
+        }
+        if(Operador.equals("<")||Operador.equals("<=")||Operador.equals(">")||Operador.equals(">=")||Operador.equals("==")||Operador.equals("!="))
+        {
+            if(GrafoCuadruplos.Tenteros.containsKey(OP1)){val1=GrafoCuadruplos.Tenteros.get(OP1);banderaOP1=false;}
+            else
+            {
+                if(GrafoCuadruplos.Tflotantes.containsKey(OP1)){val1f=GrafoCuadruplos.Tflotantes.get(OP1);banderaOP1=true;}
+                else
+                {
+                    this.Convertir("OP1");
+                    if(this.Op1int){val1=Op1Int;banderaOP1=false;}
+                    if(this.Op1dou){val1f=Op1double;banderaOP1=true;}
+                }                
+            }          
+            if(GrafoCuadruplos.Tenteros.containsKey(OP2)){val2=GrafoCuadruplos.Tenteros.get(OP2);banderaOP1=false;}
+            else
+            {
+                if(GrafoCuadruplos.Tflotantes.containsKey(OP2)){val2f=GrafoCuadruplos.Tflotantes.get(OP2);banderaOP1=true;}
+                else
+                {
+                    this.Convertir("OP2");
+                    if(this.Op2int){val2=Op2Int;banderaOP2=false;}
+                    if(this.Op2dou){val2f=Op2double;banderaOP2=true;}
+                }                
+            }          
+            
+            if(!banderaOP1&&!banderaOP2)
+            {
+                if(Operador.equals("<")){if(val1<val2){banderaSalto=true;}}
+                if(Operador.equals("<=")){if(val1<=val2){banderaSalto=true;}}
+                if(Operador.equals(">")){if(val1>val2){banderaSalto=true;}}
+                if(Operador.equals(">=")){if(val1>=val2){banderaSalto=true;}}
+                if(Operador.equals("==")){if(val1==val2){banderaSalto=true;}}
+                if(Operador.equals("!=")){if(val1!=val2){banderaSalto=true;}}
+            }
+            if(banderaOP1&&banderaOP2)
+            {
+                if(Operador.equals("<")){if(val1f<val2f){banderaSalto=true;}}
+                if(Operador.equals("<=")){if(val1f<=val2f){banderaSalto=true;}}
+                if(Operador.equals(">")){if(val1f>val2f){banderaSalto=true;}}
+                if(Operador.equals(">=")){if(val1f>=val2f){banderaSalto=true;}}
+                if(Operador.equals("==")){if(val1f==val2f){banderaSalto=true;}}
+                if(Operador.equals("!=")){if(val1f!=val2f){banderaSalto=true;}}
+            }
+        
+            if(banderaSalto){
+                NodoCuadruplos temp =G.BuscarEtiqueta(Result); 
+                if(temp!=null){
+                    temp.Ejecutar(G,m); 
+                    res=true;
+                }
+            }
+        }
+        
+        if(Operador.equals("+")||Operador.equals("-")||Operador.equals("*")||Operador.equals("/")||Operador.equals("%"))
+        {
+            if(GrafoCuadruplos.Tenteros.containsKey(Result))
+            {
+                if(!GrafoCuadruplos.Tenteros.containsKey(OP1)){this.Convertir("OP1");val1=Op1Int;}
+                else{val1=GrafoCuadruplos.Tenteros.get(OP1);}
+               
+                if(!GrafoCuadruplos.Tenteros.containsKey(OP2)){this.Convertir("OP2");val2=Op2Int;}
+                else{val2=GrafoCuadruplos.Tenteros.get(OP2);}
+                
+                if(Operador.equals("+")){val3=val1+val2;}
+                if(Operador.equals("-")){val3=val1-val2;}
+                if(Operador.equals("*")){val3=val1*val2;}
+                if(Operador.equals("/")){val3=val1/val2;}
+                if(Operador.equals("%")){val3=val1%val2;}
+                
+                GrafoCuadruplos.Tenteros.put(Result, val3);
+            }
+            if(GrafoCuadruplos.Tflotantes.containsKey(Result))
+            {
+                if(!GrafoCuadruplos.Tflotantes.containsKey(OP1)){this.Convertir("OP1");val1f=Op1double;}
+                else{val1f=GrafoCuadruplos.Tflotantes.get(OP1);}
+               
+                if(!GrafoCuadruplos.Tflotantes.containsKey(OP2)){this.Convertir("OP2");val2f=Op2double;}
+                else{val2f=GrafoCuadruplos.Tflotantes.get(OP2);}
+                
+                if(Operador.equals("+")){val3f=val1f+val2f;}
+                if(Operador.equals("-")){val3f=val1f-val2f;}
+                if(Operador.equals("*")){val3f=val1f*val2f;}
+                if(Operador.equals("/")){val3f=val1f/val2f;}
+                if(Operador.equals("%")){val3f=val1f%val2f;}
+                
+                GrafoCuadruplos.Tflotantes.put(Result, val3f);                
+            }
+        }                        
+        if(Operador.equals(";")){}                   //no hacer nada
+        return res;
+    }
+    
+}
