@@ -19,7 +19,7 @@ public class Asignacion extends Instruccion {
     
 
     
-    
+    //comentario
     public Asignacion(ExpID v,Exp e,boolean n)
     {
         Variable=v;
